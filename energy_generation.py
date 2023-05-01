@@ -16,3 +16,7 @@ def eps_cno(X, Z, T, rho):
     eps_c = ((4.4e25 * rho * X * Z) / (T9**(2/3))) * exp(-15.228 / (T9**(1/3)))
     
     return eps_c
+
+def eps_3alph(T, Y, rho, ):
+    
+    
