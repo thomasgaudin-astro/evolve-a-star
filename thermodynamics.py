@@ -15,7 +15,7 @@ def calc_alpha(rho2, rho1, P2, P1):
     
     return alpha
 
-def calc_cp(P, T, rho, nabla_ad, ):
+def calc_cp(P, T, rho, nabla_ad, delta):
     
     cp = (P * delta) / (T * rho * nabla_ad)
     
@@ -26,6 +26,14 @@ def calc_cv(P, T, rho, delta, alpha, cp):
     cv = cp - (P *(delta**2)) / (rho*T*alpha)
     
     return cv
+
+def calc_logR(T, rho):
+    
+    T6 = 1e-6 * T #kelvin
+    
+    R = rho / (T6**3) 
+    
+    return log10(R)
 
 def load_opacities(tab):
     
