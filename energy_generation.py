@@ -55,3 +55,8 @@ def eps_3alph(T, Y, rho, Z_alph, Z_Be, f1, f2):
     return eps_3a
 
     
+def eps_nuc(eps_p, eps_c, eps_3a):
+    
+    eps_n = sum(eps_p, eps_c, eps_3a)
+    
+    return eps_n
