@@ -1,6 +1,30 @@
 import pandas as pd
 import numpy as np
 
+def calc_delta(rho2, rho1, T2, T1):
+    
+    delta = - ((rho2 - rho1)/(T2-T1)) *(T2/rho2)
+    
+    return delta
+
+def calc_alpha(rho2, rho1, P2, P1):
+    
+    alpha = ((rho2 - rho1)/(P2-P1)) *(P2/rho2)
+    
+    return alpha
+
+def calc_cp(P, T, rho, nabla_ad, ):
+    
+    cp = (P * delta) / (T * rho * nabla_ad)
+    
+    return cp
+
+def calc_cv(P, T, rho, delta, alpha, cp):
+    
+    cv = cp - (P *(delta**2)) / (rho*T*alpha)
+    
+    return cv
+
 def load_opacities(tab):
     
     opacities = pd.read_csv(tab, header=0, index_col=0)
