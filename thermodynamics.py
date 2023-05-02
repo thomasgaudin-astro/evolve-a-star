@@ -49,6 +49,10 @@ def calc_Nabla_ad(P1, P2, T1, T2):
 
 def calc_Nabla_rad(kappa, L, P, M, T):
     
+    a = 7.56471e-15 #erg cm-3 K-4
+    
+    G = 6.67e-8 #units
+    
     Nabla_rad = (3 * kappa * L * P) / (16 * pi * a * c * G * M * (T**4))
     
     return Nabla_rad
