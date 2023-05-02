@@ -56,6 +56,11 @@ def eps_3alph(T, Y, rho, Z_alph, Z_Be, f1, f2):
     
     return eps_3a
 
+def eps_grav(cp, T2, P2, P1, T1, t2, t1, nabla_ad):
+    
+    eps_g = - (cp*T) ((1/T2)*((T2-T1)/(t2-t1)) - (nabla_ad/P2)((P2-P1)/(t2-t1)))
+    
+    return eps_g
     
 def eps_nuc(eps_p, eps_c, eps_3a):
     
