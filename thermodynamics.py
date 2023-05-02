@@ -51,6 +51,20 @@ def load_opacities(tab):
         
     return opacity, log_T, log_R
 
+def calc_kappa(opacity_tab, T, rho):
+    
+    opacities, log_T, log_R = load_opacities(opacity_tab)
+    
+    kap_func = RectBivariateSpline(log_T, log_R, opacities)
+    
+    logT = log10(T)
+    
+    logR = calc_logR(T, rho)
+    
+    kappa = kap_func(logT, logR)[0][0]
+    
+    return kappa
+
 def calc_Nabla_ad(P1, P2, T1, T2):
     
     Nabla_ad = ((T2 - T1) / (P2 - P1)) * (P2 / T2)
