@@ -1,5 +1,7 @@
 import numpy as np
 import pandas as pd
+from math import exp
+
 
 def calc_zeta(Zi, xi, Ai):
     #Zi - proton number
