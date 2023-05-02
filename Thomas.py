@@ -23,11 +23,19 @@ def calc_beta(T, rho):
     
     return beta
 
-def calc_Nabla(beta, kappa, L, P, M, T):
+def calc_Nabla_ad(P1, P2, T1, T2):
     
-    Nabla_ad = (1 + ((1-beta)*(4+beta))/(beta**2)) / ((5/2) + (4*(1-beta)*(4+beta))/(beta**2))
+    Nabla_ad = ((T2 - T1) / (P2 - P1)) * (P2 / T2)
+    
+    return Nabla_ad
 
+def calc_Nabla_rad(kappa, L, P, M, T):
+    
     Nabla_rad = (3 * kappa * L * P) / (16 * pi * a * c * G * M * (T**4))
+    
+    return Nabla_rad
+
+def calc_Nabla(Nabla_ad, Nabla_rad):
 
     Nabla = min(Nabla_ad, Nabla_rad)
     
