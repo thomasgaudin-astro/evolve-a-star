@@ -17,12 +17,6 @@ def load_opacities(tab):
         
     return opacity, log_T, log_R
 
-def calc_beta(T, rho):
-    
-    beta = ((rho * kb * T) / (mu * mH)) * (1 / (((rho * kb * T) / (mu * mH)) + (a / 3)*(T**4)))
-    
-    return beta
-
 def calc_Nabla_ad(P1, P2, T1, T2):
     
     Nabla_ad = ((T2 - T1) / (P2 - P1)) * (P2 / T2)
