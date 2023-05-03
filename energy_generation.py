@@ -115,9 +115,12 @@ def eps_3alph(P, T, X, Y, Z):
     
     return eps_3a
 
-def eps_grav(cp, T2, P2, P1, T1, t2, t1, nabla_ad):
+def eps_grav(P, T, X, Y, Z, P_old, T_old, time_step):
     
-    eps_g = - (cp*T) ((1/T2)*((T2-T1)/(t2-t1)) - (nabla_ad/P2)((P2-P1)/(t2-t1)))
+    cp = cp_calc(P, T, X, Y, Z)
+    nabla_ad = nabla_ad_calc(P, T, X, Y, Z)
+    
+    eps_g = - (cp*T) ((1/)*((T-T_old)/(time_step)) - (nabla_ad/P)((P-P_old)/(time_step)))
     
     return eps_g
     
