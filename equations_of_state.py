@@ -15,6 +15,10 @@ amu_to_g = 1.66054e-24 #1 amu in g
 mp_in_g = mp*amu_to_g #convert mp from amu to g ****************************
 ma = mp_in_g
 
+#calculate new abundances
+X2 = calc_new_abund(Ai, X, r_x1, r_x2, t1, t2, rho)
+Y2 = calc_new_abund(Ai, Y, r_x1, r_x2, t1, t2, rho)
+
 """Number density needed to calculate psi"""
 def number_density(X,rho):
     NA = 6.02e23 #avogadro's number = 6.02e23 mol^-1,  beacause 1mol = 6.02e23 particles
