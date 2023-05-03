@@ -6,6 +6,13 @@ from scipy.interpolate import RectBivariateSpline
 #constants
 a = 7.56471e-15 #erg cm-3 K-4
 G = 6.67e-8 #units
+ma = 1.66e-24 #g
+NA = 6.022e23 #atoms mol^-1
+h = 6.63e-27
+kb = 1.38e-16 #cgs
+kb_ev = 8.62e-5 #ev K^-1
+m_He = 4.0026 * ma #g
+c = 3.0e10 #cm s^-1
 
 def delta_calc(P, T, X, Y, Z):
     
@@ -44,24 +51,29 @@ def calc_beta(P, T, X, Y, Z):
     
     return beta
     
-
-def calc_Nabla_ad(P1, P2, T1, T2):
+def nabla_ad_calc(P, T, X, Y, Z):
     
-    Nabla_ad = ((T2 - T1) / (P2 - P1)) * (P2 / T2)
+    beta = calc_beta(P, T, X, Y, Z)
+    
+    Nabla_ad = (1 + ((1-beta)*(4+beta))/(beta**2)) / ((5/2) + (4*(1-beta)*(4+beta))/(beta**2))
     
     return Nabla_ad
 
-def calc_cp(P, T, X, Y, Z):
+def cp_calc(P, T, X, Y, Z):
     
     delta = delta_calc(P, T, X, Y, Z)
-    
-    nabla_ad = nabla_ad_calc
+    rho = rho_calc(P, T, X, Y, Z)
+    Nabla_ad = nabla_ad_calc(P, T, X, Y, Z)
     
     cp = (P * delta) / (T * rho * nabla_ad)
     
     return cp
 
 def calc_cv(P, T, rho, delta, alpha, cp):
+    
+    alpha = alpha_calc(P, T, X, Y, Z)
+    
+    cp = cp_calc(P, T, X, Y, Z)
     
     cv = cp - (P *(delta**2)) / (rho*T*alpha)
     
@@ -107,14 +119,19 @@ def kappa_calc(P, T, X, Y, Z, opacity_tab):
     
     return kappa
 
-def calc_Nabla_rad(kappa, L, P, M, T):
+def nabla_rad_calc(L, P, T, M, X, Y, Z, opacity_tab):
+    
+    kappa = kappa_calc(P, T, X, Y, Z, opacity_tab)
     
     Nabla_rad = (3 * kappa * L * P) / (16 * pi * a * c * G * M * (T**4))
     
     return Nabla_rad
 
-def calc_Nabla(Nabla_ad, Nabla_rad):
-
+def Nabla_calc(L, P, T, M, X, Y, Z, opacity_tab):
+    
+    Nabla_ad = nabla_ad_calc(P, T, X, Y, Z)
+    Nabla_rad = nabla_rad_calc(L, P, T, M, X, Y, Z, opacity_tab)
+    
     Nabla = min(Nabla_ad, Nabla_rad)
     
     return Nabla
