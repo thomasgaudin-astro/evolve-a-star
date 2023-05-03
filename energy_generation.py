@@ -2,6 +2,19 @@ import numpy as np
 import pandas as pd
 from math import exp
 
+def reduced_mass(num):
+    
+    A = num/(1+num)
+    
+    return A
+
+Zi_1 = [1, 2, 6]
+xi_1 = [X, Y, Z]
+Ai_1 = [reduced_mass(1), reduced_mass(2), reduced_mass(6)]
+
+Zi_2 = [1, 2, 4, 6]
+xi_2 = [X, Y, Be, Z]
+Ai_2 = [reduced_mass(1), reduced_mass(2), reduced_mass(4), reduced_mass(6)]
 
 def calc_zeta(Zi, xi, Ai):
     #Zi - proton number
