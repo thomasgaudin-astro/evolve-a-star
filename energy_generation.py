@@ -30,15 +30,18 @@ def calc_f(Z1, Z2, zeta, rho, T):
     
     return f
 
-def calc_Be_abund(chi_alph, f_alpha_alph, m_He, T, rho, A_alph, A_Be, Y):
+def calc_Be_abund(f_alpha_alph, T, rho, A_alph, A_Be, Y, chi_alph=-91.78e-3):
     
+    ma = 1.66e-24 #g
     NA = 6.022e23 #atoms mol^-1
     h = 6.63e-27
-    kb = 1.38e-16
+    kb = 1.38e-16 #cgs
+    kb_ev = 8.62e-5 #ev K^-1
+    m_He = 4.0026 * ma #g
     
     x = (2*pi*(m_He/2)*kb*T)/(h**2)
     
-    x_Be = ((A_alph**2)/A_Be) * (1/((Y**2)*rho*NA)) * (1/f_alpha_alph) * (x**(-3/2)) * exp((chi_alph+chi_alph)/(kb*T))
+    x_Be = ((A_alph**2)/A_Be) * (1/((Y**2)*rho*NA)) * (1/f_alpha_alph) * (x**(-3/2)) * exp(chi_alph/(kb_ev*T))
     
     return x_Be
 
