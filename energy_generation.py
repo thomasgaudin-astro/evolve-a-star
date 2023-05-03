@@ -86,7 +86,7 @@ def calc_reac_rate(eps_x, Qx, rho):
     
     return r_x
 
-def calc_new_abund(Ai, X1, r_x1, r_x2, t1, t2):
+def calc_new_abund(Ai, X1, r_x1, r_x2, t1, t2, rho):
     #r_x1 - list of creation reaction rates
     #r_x2 - list of destruction reaction rates
     #Ai - species reduced atomic mass
