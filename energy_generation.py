@@ -67,3 +67,9 @@ def eps_nuc(eps_p, eps_c, eps_3a):
     eps_n = sum(eps_p, eps_c, eps_3a)
     
     return eps_n
+
+def calc_reac_rate(eps_x, Qx, rho):
+    
+    r_x = (eps_x * rho) / Qx
+    
+    return r_x
