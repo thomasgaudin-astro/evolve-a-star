@@ -30,6 +30,18 @@ def calc_f(Z1, Z2, zeta, rho, T):
     
     return f
 
+def calc_Be_abund(chi_alph, f_alpha_alph, m_He, T, rho, A_alph, A_Be, Y):
+    
+    NA = 6.022e23 #atoms mol^-1
+    h = 6.63e-27
+    kb = 1.38e-16
+    
+    x = (2*pi*(m_He/2)*kb*T)/(h**2)
+    
+    x_Be = ((A_alph**2)/A_Be) * (1/((Y**2)*rho*NA)) * (1/f_alpha_alph) * (x**(-3/2)) * exp((chi_alph+chi_alph)/(kb*T))
+    
+    return x_Be
+
 def eps_ppc(X, T, rho):
     
     T9 = 1e-9 * T 
@@ -46,7 +58,7 @@ def eps_cno(X, Z, T, rho):
     
     return eps_c
 
-def eps_3alph(T, Y, rho, Z_alph, Z_Be, f1, f2):
+def eps_3alph(T, Y, rho, f1, f2):
     
     T9 = 1e-9 * T 
     
