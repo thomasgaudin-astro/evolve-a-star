@@ -3,33 +3,43 @@ import numpy as np
 from math import exp, log10
 from scipy.interpolate import RectBivariateSpline
 
-def delta_calc(P, T):
+def delta_calc(P, T, X, Y, Z):
     
-    rho = rho_calc(P, T)
+    rho = rho_calc(P, T, X, Y, Z)
    
     T2 = T + (0.01 * T)
     
-    rho_2 = rho_calc(P, T2)
+    rho_2 = rho_calc(P, T2, X, Y, Z)
     
     delta = - ((rho2 - rho)/(T2-T)) *(T2/rho2)
     
     return delta
 
-def alpha_calc(P, T):
+def alpha_calc(P, T, X, Y, Z):
     
-    rho = rho_calc(P, T)
+    rho = rho_calc(P, T, X, Y, Z)
    
     P2 = P + (0.01 * P)
     
-    rho_2 = rho_calc(P2, T)
+    rho_2 = rho_calc(P2, T, X, Y, Z)
     
     alpha = ((rho2 - rho)/(P2-P)) *(P2/rho2)
     
     return alpha
 
-def calc_cp(P, T):
+def calc_beta(P, T, X, Y, Z):
     
-    delta = delta_calc(P, T)
+    
+
+def calc_Nabla_ad(P1, P2, T1, T2):
+    
+    Nabla_ad = ((T2 - T1) / (P2 - P1)) * (P2 / T2)
+    
+    return Nabla_ad
+
+def calc_cp(P, T, X, Y, Z):
+    
+    delta = delta_calc(P, T, X, Y, Z)
     
     nabla_ad = nabla_ad_calc
     
@@ -83,11 +93,7 @@ def calc_kappa(opacity_tab, T, P):
     
     return kappa
 
-def calc_Nabla_ad(P1, P2, T1, T2):
-    
-    Nabla_ad = ((T2 - T1) / (P2 - P1)) * (P2 / T2)
-    
-    return Nabla_ad
+
 
 def calc_Nabla_rad(kappa, L, P, M, T):
     
