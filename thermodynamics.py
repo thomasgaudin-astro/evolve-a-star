@@ -53,7 +53,7 @@ def load_opacities(tab):
 
 def calc_kappa(opacity_tab, T, P):
     
-    rho = calc_rho(T, P)
+    rho = rho_calc(T, P)
     
     opacities, log_T, log_R = load_opacities(opacity_tab)
     
