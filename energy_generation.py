@@ -2,19 +2,18 @@ import numpy as np
 import pandas as pd
 from math import exp
 
+ma = 1.66e-24 #g
+NA = 6.022e23 #atoms mol^-1
+h = 6.63e-27
+kb = 1.38e-16 #cgs
+kb_ev = 8.62e-5 #ev K^-1
+m_He = 4.0026 * ma #g
+
 def reduced_mass(num):
     
     A = num/(1+num)
     
     return A
-
-Zi_1 = [1, 2, 6]
-xi_1 = [X, Y, Z]
-Ai_1 = [reduced_mass(1), reduced_mass(2), reduced_mass(6)]
-
-Zi_2 = [1, 2, 4, 6]
-xi_2 = [X, Y, Be, Z]
-Ai_2 = [reduced_mass(1), reduced_mass(2), reduced_mass(4), reduced_mass(6)]
 
 def calc_zeta(Zi, xi, Ai):
     #Zi - proton number
@@ -33,24 +32,30 @@ def calc_zeta(Zi, xi, Ai):
     
     return zeta
 
-def calc_f(Z1, Z2, zeta, rho, T): 
+def calc_f(P, T, X, Y, Z, Z1, Z2, zeta): 
+    
+    rho = rho_calc(P, T, X, Y, Z)
     
     T6 = 1e-6 * T 
     
     zet_rho = (zeta * rho) / (T6**3)
     
-    f = exp(0.188 * Z1 * Z2 * (zet_rho**(1/2)))
+    f = math.exp(0.188 * Z1 * Z2 * (zet_rho**(1/2)))
     
     return f
 
-def calc_Be_abund(f_alpha_alph, T, rho, A_alph, A_Be, Y, chi_alph=-91.78e-3):
+def calc_Be_abund(P, T, X, Y, Z, A_alph, A_Be, chi_alph=-91.78e-3):
     
-    ma = 1.66e-24 #g
-    NA = 6.022e23 #atoms mol^-1
-    h = 6.63e-27
-    kb = 1.38e-16 #cgs
-    kb_ev = 8.62e-5 #ev K^-1
-    m_He = 4.0026 * ma #g
+    rho = rho_calc(P, T, X, Y, Z)
+    
+    #without Be
+    Zi_1 = [1, 2, 6]
+    xi_1 = [X, Y, Z]
+    Ai_1 = [reduced_mass(1), reduced_mass(2), reduced_mass(6)]
+    
+    zeta_no_Be = calc_zeta(Zi_1, xi_1, Ai_1)
+    
+    f_alph_alph = calc_f(P, T, X, Y, Z, 2, 2, zeta_no_Be)
     
     x = (2*pi*(m_He/2)*kb*T)/(h**2)
     
@@ -58,25 +63,51 @@ def calc_Be_abund(f_alpha_alph, T, rho, A_alph, A_Be, Y, chi_alph=-91.78e-3):
     
     return x_Be
 
-def eps_ppc(X, T, rho):
+def eps_ppc(P, T, X, Y, Z):
     
     T9 = 1e-9 * T 
+    
+    rho = rho_calc(P, T, X, Y, Z)
     
     eps_p = ((2.4e4 * rho * (X**2)) / (T9**(2/3))) * exp(-3.88 / (T9**(1/3)))
              
     return eps_p
   
-def eps_cno(X, Z, T, rho):
+def eps_cno(P, T, X, Y, Z):
     
     T9 = 1e-9 * T 
     
-    eps_c = ((4.4e25 * rho * X * Z) / (T9**(2/3))) * exp(-15.228 / (T9**(1/3)))
+    rho = rho_calc(P, T, X, Y, Z)
+    
+    eps_c = ((4.4e25 * rho * X * Z) / (T9**(2/3))) *exp(-15.228 / (T9**(1/3)))
     
     return eps_c
 
-def eps_3alph(T, Y, rho, f1, f2):
+def eps_3alph(P, T, X, Y, Z):
     
     T9 = 1e-9 * T 
+    
+    rho = rho_calc(P, T, X, Y, Z)
+    
+    #without Be
+    Zi_1 = [1, 2, 6]
+    xi_1 = [X, Y, Z]
+    Ai_1 = [reduced_mass(1), reduced_mass(2), reduced_mass(6)]
+    
+    zeta_no_Be = calc_zeta(Zi_1, xi_1, Ai_1)
+    
+    f_alph_alph = calc_f(P, T, X, Y, Z, 2, 2, zeta_no_Be)
+    
+    Be = calc_Be_abund(P, T, X, Y, Z, reduced_mass(2), reduced_mass(4), chi_alph=-91.78e-3)
+    
+    #with Be
+    Zi_2 = [1, 2, 4, 6]
+    xi_2 = [X, Y, Be, Z]
+    Ai_2 = [reduced_mass(1), reduced_mass(2), reduced_mass(4), reduced_mass(6)]
+    
+    zeta_Be = calc_zeta(Zi_1, xi_1, Ai_1)
+    
+    f_alph_Be = calc_f(P, T, X, Y, Z, 2, 4, zeta_Be)
     
     rho_y_T = ( ( (rho**2) * (Y**3) ) / (T9**3) )
     
@@ -90,7 +121,11 @@ def eps_grav(cp, T2, P2, P1, T1, t2, t1, nabla_ad):
     
     return eps_g
     
-def eps_nuc(eps_p, eps_c, eps_3a):
+def eps_nuc(P, T, X, Y, Z):
+    
+    eps_p = eps_ppc(P, T, X, Y, Z)
+    eps_c = eps_cno(P, T, X, Y, Z)
+    eps_3a = eps_3alph(P, T, X, Y, Z)
     
     eps_n = sum(eps_p, eps_c, eps_3a)
     
