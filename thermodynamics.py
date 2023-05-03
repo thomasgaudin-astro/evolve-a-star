@@ -15,7 +15,7 @@ def delta_calc(P, T):
     
     return delta
 
-def calc_alpha(P, T):
+def alpha_calc(P, T):
     
     rho1 = rho_calc(P, T)
    
