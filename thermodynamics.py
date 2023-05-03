@@ -5,31 +5,33 @@ from scipy.interpolate import RectBivariateSpline
 
 def delta_calc(P, T):
     
-    rho1 = rho_calc(P, T)
+    rho = rho_calc(P, T)
    
     T2 = T + (0.01 * T)
     
     rho_2 = rho_calc(P, T2)
     
-    delta = - ((rho2 - rho1)/(T2-T)) *(T2/rho2)
+    delta = - ((rho2 - rho)/(T2-T)) *(T2/rho2)
     
     return delta
 
 def alpha_calc(P, T):
     
-    rho1 = rho_calc(P, T)
+    rho = rho_calc(P, T)
    
     P2 = P + (0.01 * P)
     
     rho_2 = rho_calc(P2, T)
     
-    alpha = ((rho2 - rho1)/(P2-P)) *(P2/rho2)
+    alpha = ((rho2 - rho)/(P2-P)) *(P2/rho2)
     
     return alpha
 
-def calc_cp(P2, P1, T2, T1, nabla_ad):
+def calc_cp(P, T):
     
-    delta = delta_calc()
+    delta = delta_calc(P, T)
+    
+    nabla_ad = nabla_ad_calc
     
     cp = (P * delta) / (T * rho * nabla_ad)
     
