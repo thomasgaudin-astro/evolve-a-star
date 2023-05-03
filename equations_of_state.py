@@ -39,10 +39,18 @@ carbon_mf = np.mean(File[:,32])
 # the equation of state...pressure
 """Need to provide Temp, H and He, abundance. Z is the average carbon mass function from the
 structure file"""
-def pressure(T,X,rho, Y, Z=carbon_mf):
+def pressure(T,X,rho, Y, Z):
     Psi = psi(T,X,rho)
     mu_I, mu_e = (X/1 + Y/4 + Z/14)**-1 , 2/(1+X) 
     mu = (1/mu_I + 1/mu_e)**-1 #"""mean molecular weight """ 
     integral = -3*kB*T*np.sqrt(np.pi/2) * polylog(5/2, -np.exp(1)**ps) / ((1/kB*me*T)**(3/2))
     pres = (a*T_init**4)/3 + rho*kB*T/(mu*ma) + 8*np.pi/(3*h**3) * integral
     return pres
+
+# takes P, T and abundances
+def rho_calc(P,T, X, Y, Z):
+    mu_I, mu_e = (X/1 + Y/4 + Z/14)**-1 , 2/(1+X) 
+    mu = (1/mu_I + 1/mu_e)**-1
+    integral = -3*kB*T*np.sqrt(np.pi/2) * polylog(5/2, -np.exp(1)**ps) / ((1/kB*me*T)**(3/2))
+    rho = ( P-(a*T**4)/3 - 8*np.pi/(3*h**3) * integral ) * ( mu*ma/(kB*T) )
+    return rho
