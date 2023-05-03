@@ -73,3 +73,18 @@ def calc_reac_rate(eps_x, Qx, rho):
     r_x = (eps_x * rho) / Qx
     
     return r_x
+
+def calc_new_abund(Ai, X1, r_x1, r_x2, t1, t2):
+    #r_x1 - list of creation reaction rates
+    #r_x2 - list of destruction reaction rates
+    #Ai - species reduced atomic mass
+    #X1 - Original abundance
+    #t2, t1 - time (seconds)
+    
+    NA = 6.022e23 #atoms mol^-1
+    
+    dXi_dt = (Ai / (rho*NA)) * (sum(r_x1)-sum(r_x2))
+    
+    X2 = X1 + (dXi_dt * (t2-t1))
+    
+    return X2
