@@ -3,6 +3,10 @@ import numpy as np
 from math import exp, log10
 from scipy.interpolate import RectBivariateSpline
 
+#constants
+a = 7.56471e-15 #erg cm-3 K-4
+G = 6.67e-8 #units
+
 def delta_calc(P, T, X, Y, Z):
     
     rho = rho_calc(P, T, X, Y, Z)
@@ -29,6 +33,16 @@ def alpha_calc(P, T, X, Y, Z):
 
 def calc_beta(P, T, X, Y, Z):
     
+    mu_I, mu_e = (X/1 + Y/4 + Z/14)**-1 , 2/(1+X) 
+    mu = (1/mu_I + 1/mu_e)**-1
+    
+    rho = rho_calc(P, T, X, Y, Z)
+    
+    P_ion = (rho / (mu * ma) ) * kb * T
+    
+    beta = P_ion / P
+    
+    return beta
     
 
 def calc_Nabla_ad(P1, P2, T1, T2):
@@ -77,9 +91,9 @@ def load_opacities(tab):
         
     return opacity, log_T, log_R
 
-def calc_kappa(opacity_tab, T, P):
+def kappa_calc(P, T, X, Y, Z, opacity_tab):
     
-    rho = rho_calc(T, P)
+    rho = rho_calc(P, T, X, Y, Z)
     
     opacities, log_T, log_R = load_opacities(opacity_tab)
     
@@ -93,13 +107,7 @@ def calc_kappa(opacity_tab, T, P):
     
     return kappa
 
-
-
 def calc_Nabla_rad(kappa, L, P, M, T):
-    
-    a = 7.56471e-15 #erg cm-3 K-4
-    
-    G = 6.67e-8 #units
     
     Nabla_rad = (3 * kappa * L * P) / (16 * pi * a * c * G * M * (T**4))
     
