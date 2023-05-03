@@ -3,19 +3,33 @@ import numpy as np
 from math import exp, log10
 from scipy.interpolate import RectBivariateSpline
 
-def calc_delta(rho2, rho1, T2, T1):
+def delta_calc(P, T):
     
-    delta = - ((rho2 - rho1)/(T2-T1)) *(T2/rho2)
+    rho1 = rho_calc(P, T)
+   
+    T2 = T + (0.01 * T)
+    
+    rho_2 = rho_calc(P, T2)
+    
+    delta = - ((rho2 - rho1)/(T2-T)) *(T2/rho2)
     
     return delta
 
-def calc_alpha(rho2, rho1, P2, P1):
+def calc_alpha(P, T):
     
-    alpha = ((rho2 - rho1)/(P2-P1)) *(P2/rho2)
+    rho1 = rho_calc(P, T)
+   
+    P2 = P + (0.01 * P)
+    
+    rho_2 = rho_calc(P2, T)
+    
+    alpha = ((rho2 - rho1)/(P2-P)) *(P2/rho2)
     
     return alpha
 
-def calc_cp(P, T, rho, nabla_ad, delta):
+def calc_cp(P2, P1, T2, T1, nabla_ad):
+    
+    delta = delta_calc()
     
     cp = (P * delta) / (T * rho * nabla_ad)
     
