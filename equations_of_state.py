@@ -3,6 +3,7 @@ import numpy as np
 from math import exp, log10, log
 from scipy.interpolate import RectBivariateSpline
 from mpmath import polylog
+import math
 
 # constants
 h = 6. 626176e-27 #erg/s #planck's const
@@ -39,6 +40,7 @@ carbon_mf = np.mean(File[:,32])
 # the equation of state...pressure
 """Need to provide Temp, H and He, abundance. Z is the average carbon mass function from the
 structure file"""
+# make a guess for rho & calculate pressure
 def pressure(T,X,rho, Y, Z):
     Psi = psi(T,X,rho)
     mu_I, mu_e = (X/1 + Y/4 + Z/14)**-1 , 2/(1+X) 
@@ -47,10 +49,30 @@ def pressure(T,X,rho, Y, Z):
     pres = (a*T_init**4)/3 + rho*kB*T/(mu*ma) + 8*np.pi/(3*h**3) * integral
     return pres
 
-# takes P, T and abundances
-def rho_calc(P,T, X, Y, Z):
+
+# function that uses a rho guess to calculate pressure, compares that pressure to henyey pressure by taking difference.
+# it perturbs that pressure, calculates a new rho, and repeats the above process until the difference is ~0.
+def rho_calc(P,T, X, Y, Z, rho):
     mu_I, mu_e = (X/1 + Y/4 + Z/14)**-1 , 2/(1+X) 
     mu = (1/mu_I + 1/mu_e)**-1
-    integral = -3*kB*T*np.sqrt(np.pi/2) * polylog(5/2, -np.exp(1)**ps) / ((1/kB*me*T)**(3/2))
-    rho = ( P-(a*T**4)/3 - 8*np.pi/(3*h**3) * integral ) * ( mu*ma/(kB*T) )
-    return rho
+    
+    old_pressure = pressure(T,X,rho, Y, Z) #guess rho, then calculate pressure
+    henyey_pressure = P
+    diff = henyey_pressure - old_pressure 
+    
+    # perturb pressure iteratively until the difference is approximately 0 
+    # Will exit the loop if the check == True
+    while math.isclose(diff, 0, abs_tol = 0.0) == False:
+        P_new = old_pressure + diff/10  # perturb the old pressure and use it to calculate a new rho
+        
+        integral = -3*kB*T*np.sqrt(np.pi/2) * polylog(5/2, -np.exp(1)**ps) / ((1/kB*me*T)**(3/2))
+        rho_new = ( P_new-(a*T**4)/3 - 8*np.pi/(3*h**3) * integral ) * ( mu*ma/(kB*T) )
+        
+        #calculate pressure again using new rho. Redefine old_pressure
+        old_pressure = pressure(T,X,rho_new, Y, Z)  #P_new
+        
+        diff = henyey_pressure - old_pressure  #diff_new
+
+    rho_save = rho_new
+        
+    return rho_saved
