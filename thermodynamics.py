@@ -14,36 +14,36 @@ kb_ev = 8.62e-5 #ev K^-1
 m_He = 4.0026 * ma #g
 c = 3.0e10 #cm s^-1
 
-def delta_calc(P, T, X, Y, Z):
+def delta_calc(P, T, X, Y, Z, old_rho):
     
-    rho = rho_calc(P, T, X, Y, Z)
+    rho = rho_calc(P, T, X, Y, Z, old_rho)
    
     T2 = T + (0.01 * T)
     
-    rho_2 = rho_calc(P, T2, X, Y, Z)
+    rho_2 = rho_calc(P, T2, X, Y, Z, old_rho)
     
     delta = - ((rho2 - rho)/(T2-T)) *(T2/rho2)
     
     return delta
 
-def alpha_calc(P, T, X, Y, Z):
+def alpha_calc(P, T, X, Y, Z, old_rho):
     
-    rho = rho_calc(P, T, X, Y, Z)
+    rho = rho_calc(P, T, X, Y, Z, old_rho)
    
     P2 = P + (0.01 * P)
     
-    rho_2 = rho_calc(P2, T, X, Y, Z)
+    rho_2 = rho_calc(P2, T, X, Y, Z, old_rho)
     
     alpha = ((rho2 - rho)/(P2-P)) *(P2/rho2)
     
     return alpha
 
-def calc_beta(P, T, X, Y, Z):
+def calc_beta(P, T, X, Y, Z, old_rho):
     
     mu_I, mu_e = (X/1 + Y/4 + Z/14)**-1 , 2/(1+X) 
     mu = (1/mu_I + 1/mu_e)**-1
     
-    rho = rho_calc(P, T, X, Y, Z)
+    rho = rho_calc(P, T, X, Y, Z, old_rho)
     
     P_ion = (rho / (mu * ma) ) * kb * T
     
@@ -51,29 +51,31 @@ def calc_beta(P, T, X, Y, Z):
     
     return beta
     
-def nabla_ad_calc(P, T, X, Y, Z):
+def nabla_ad_calc(P, T, X, Y, Z, old_rho):
     
-    beta = calc_beta(P, T, X, Y, Z)
+    beta = calc_beta(P, T, X, Y, Z, old_rho)
     
     Nabla_ad = (1 + ((1-beta)*(4+beta))/(beta**2)) / ((5/2) + (4*(1-beta)*(4+beta))/(beta**2))
     
     return Nabla_ad
 
-def cp_calc(P, T, X, Y, Z):
+def cp_calc(P, T, X, Y, Z, old_rho):
     
-    delta = delta_calc(P, T, X, Y, Z)
-    rho = rho_calc(P, T, X, Y, Z)
-    Nabla_ad = nabla_ad_calc(P, T, X, Y, Z)
+    delta = delta_calc(P, T, X, Y, Z, old_rho)
+    rho = rho_calc(P, T, X, Y, Z, old_rho)
+    Nabla_ad = nabla_ad_calc(P, T, X, Y, Z, old_rho)
     
     cp = (P * delta) / (T * rho * nabla_ad)
     
     return cp
 
-def calc_cv(P, T, rho, delta, alpha, cp):
+def calc_cv(P, T, X, Y, Z, old_rho):
     
-    alpha = alpha_calc(P, T, X, Y, Z)
+    delta = delta_calc(P, T, X, Y, Z, old_rho)
+    alpha = alpha_calc(P, T, X, Y, Z, old_rho)
     
-    cp = cp_calc(P, T, X, Y, Z)
+    rho = rho_calc(P, T, X, Y, Z, old_rho)
+    cp = cp_calc(P, T, X, Y, Z, old_rho)
     
     cv = cp - (P *(delta**2)) / (rho*T*alpha)
     
