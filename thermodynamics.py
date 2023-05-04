@@ -105,9 +105,9 @@ def load_opacities(tab):
         
     return opacity, log_T, log_R
 
-def kappa_calc(P, T, X, Y, Z, opacity_tab):
+def kappa_calc(P, T, X, Y, Z, old_rho, opacity_tab):
     
-    rho = rho_calc(P, T, X, Y, Z)
+    rho = rho_calc(P, T, X, Y, Z, old_rho)
     
     opacities, log_T, log_R = load_opacities(opacity_tab)
     
@@ -121,9 +121,9 @@ def kappa_calc(P, T, X, Y, Z, opacity_tab):
     
     return kappa
 
-def nabla_rad_calc(L, P, T, M, X, Y, Z, opacity_tab):
+def nabla_rad_calc(L, P, T, M, X, Y, Z, old_rho, opacity_tab):
     
-    kappa = kappa_calc(P, T, X, Y, Z, opacity_tab)
+    kappa = kappa_calc(P, T, X, Y, Z, old_rho, opacity_tab)
     
     Nabla_rad = (3 * kappa * L * P) / (16 * pi * a * c * G * M * (T**4))
     
