@@ -140,17 +140,61 @@ def calc_reac_rate(eps_x, Qx, rho):
     
     return r_x
 
-def calc_new_abund(Ai, X1, r_x1=[], r_x2=[], t1, t2, rho):
+def calc_new_abund(X, Y, Z, rho, eps_p, eps_c, eps_3a, time_step):
     #r_x1 - list of creation reaction rates
     #r_x2 - list of destruction reaction rates
     #Ai - species reduced atomic mass
     #X1 - Original abundance
     #t2, t1 - time (seconds)
     
-    NA = 6.022e23 #atoms mol^-1
+    Q_H_He = 26.73e6 #eV
+    Q_He_C = 7.275e6 #eV
     
-    dXi_dt = (Ai / (rho*NA)) * (sum(r_x1)-sum(r_x2))
+    Ai = [reduced_mass(1), reduced_mass(2), reduced_mass(6)]
     
-    X2 = X1 + (dXi_dt * (t2-t1))
+    #Hydrogen reaction rates
+    r_H_ppc = calc_reac_rate(eps_p, Q_H_He, rho)
+    r_H_cno = calc_reac_rate(eps_c, Q_H_He, rho)
     
-    return X2
+    #destruction of H
+    r_H_d=[r_H_ppc, r_H_cno] 
+    #creation of H
+    r_H_c=[] 
+    
+    #differential H abundance
+    dX_dt = (Ai[0] / (rho*NA)) * (sum(r_H_c)-sum(r_H_d))
+    
+    #new H abundance
+    X_new = X + (dX_dt * (time_step))
+    
+    #Helium reaction rates
+    r_He_ppc = calc_reac_rate(eps_p, Q_H_He, rho)
+    r_He_cno = calc_reac_rate(eps_c, Q_H_He, rho)
+    r_He_3alph = calc_reac_rate(eps_3a, Q_He_C, rho)
+    
+    #creation of He
+    r_He_c=[r_He_ppc, r_He_cno] 
+    #destruction of H
+    r_He_d=[r_He_3alph] 
+    
+    #differential He abundance
+    dY_dt = (Ai[1] / (rho*NA)) * (sum(r_He_c)-sum(r_He_d))
+    
+    #new H abundance
+    Y_new = Y + (dY_dt * (time_step))
+    
+    #Carbon reaction rates
+    r_C_3alph = calc_reac_rate(eps_3a, Q_He_C, rho)
+    
+    #creation of C
+    r_C_c=[r_C_3alph] 
+    #destruction of H
+    r_C_d=[] 
+    
+    #differential He abundance
+    dZ_dt = (Ai[2] / (rho*NA)) * (sum(r_C_c)-sum(r_C_d))
+    
+    #new H abundance
+    Z_new = Z + (dZ_dt * (time_step))
+    
+    return X_new, Y_new, Z_new
