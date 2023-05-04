@@ -2,8 +2,6 @@ import numpy as np
 import matplotlib.pyplot as plt
 import argparse
 import pandas as pd
-from scipy.interpolate import RectBivariateSpline as RBS
-import timeit
 
 
 # Constants
