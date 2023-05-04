@@ -6,7 +6,7 @@ from mpmath import polylog
 import math
 
 # constants
-h = 6. 626176e-27 #erg/s #planck's const
+h = 6.626176e-27 #erg/s #planck's const
 me = 9.1094e-28 #electron mass (g)
 kB = 1.3807e-16 #cm2 g s-2 K-1 boltzmann const
 
