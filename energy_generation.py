@@ -32,9 +32,9 @@ def calc_zeta(Zi, xi, Ai):
     
     return zeta
 
-def calc_f(P, T, X, Y, Z, Z1, Z2, zeta): 
+def calc_f(P, T, X, Y, Z, old_rho, Z1, Z2, zeta): 
     
-    rho = rho_calc(P, T, X, Y, Z)
+    rho = rho_calc(P, T, X, Y, Z, old_rho)
     
     T6 = 1e-6 * T 
     
@@ -44,9 +44,9 @@ def calc_f(P, T, X, Y, Z, Z1, Z2, zeta):
     
     return f
 
-def calc_Be_abund(P, T, X, Y, Z, A_alph, A_Be, chi_alph=-91.78e-3):
+def calc_Be_abund(P, T, X, Y, Z, old_rho, A_alph, A_Be, chi_alph=-91.78e-3):
     
-    rho = rho_calc(P, T, X, Y, Z)
+    rho = rho_calc(P, T, X, Y, Z, old_rho)
     
     #without Be
     Zi_1 = [1, 2, 6]
@@ -55,7 +55,7 @@ def calc_Be_abund(P, T, X, Y, Z, A_alph, A_Be, chi_alph=-91.78e-3):
     
     zeta_no_Be = calc_zeta(Zi_1, xi_1, Ai_1)
     
-    f_alph_alph = calc_f(P, T, X, Y, Z, 2, 2, zeta_no_Be)
+    f_alph_alph = calc_f(P, T, X, Y, Z, old_rho, 2, 2, zeta_no_Be)
     
     x = (2*pi*(m_He/2)*kb*T)/(h**2)
     
@@ -63,31 +63,31 @@ def calc_Be_abund(P, T, X, Y, Z, A_alph, A_Be, chi_alph=-91.78e-3):
     
     return x_Be
 
-def eps_ppc(P, T, X, Y, Z):
+def eps_ppc(P, T, X, Y, Z, old_rho):
     
     T9 = 1e-9 * T 
     
-    rho = rho_calc(P, T, X, Y, Z)
+    rho = rho_calc(P, T, X, Y, Z, old_rho)
     
     eps_p = ((2.4e4 * rho * (X**2)) / (T9**(2/3))) * exp(-3.88 / (T9**(1/3)))
              
     return eps_p
   
-def eps_cno(P, T, X, Y, Z):
+def eps_cno(P, T, X, Y, Z, old_rho):
     
     T9 = 1e-9 * T 
     
-    rho = rho_calc(P, T, X, Y, Z)
+    rho = rho_calc(P, T, X, Y, Z, old_rho)
     
     eps_c = ((4.4e25 * rho * X * Z) / (T9**(2/3))) *exp(-15.228 / (T9**(1/3)))
     
     return eps_c
 
-def eps_3alph(P, T, X, Y, Z):
+def eps_3alph(P, T, X, Y, Z, old_rho):
     
     T9 = 1e-9 * T 
     
-    rho = rho_calc(P, T, X, Y, Z)
+    rho = rho_calc(P, T, X, Y, Z, old_rho)
     
     #without Be
     Zi_1 = [1, 2, 6]
@@ -96,9 +96,9 @@ def eps_3alph(P, T, X, Y, Z):
     
     zeta_no_Be = calc_zeta(Zi_1, xi_1, Ai_1)
     
-    f_alph_alph = calc_f(P, T, X, Y, Z, 2, 2, zeta_no_Be)
+    f_alph_alph = calc_f(P, T, X, Y, Z, old_rho, 2, 2, zeta_no_Be)
     
-    Be = calc_Be_abund(P, T, X, Y, Z, reduced_mass(2), reduced_mass(4), chi_alph=-91.78e-3)
+    Be = calc_Be_abund(P, T, X, Y, Z, old_rho, reduced_mass(2), reduced_mass(4), chi_alph=-91.78e-3)
     
     #with Be
     Zi_2 = [1, 2, 4, 6]
@@ -107,7 +107,7 @@ def eps_3alph(P, T, X, Y, Z):
     
     zeta_Be = calc_zeta(Zi_1, xi_1, Ai_1)
     
-    f_alph_Be = calc_f(P, T, X, Y, Z, 2, 4, zeta_Be)
+    f_alph_Be = calc_f(P, T, X, Y, Z, old_rho 2, 4, zeta_Be)
     
     rho_y_T = ( ( (rho**2) * (Y**3) ) / (T9**3) )
     
@@ -115,20 +115,20 @@ def eps_3alph(P, T, X, Y, Z):
     
     return eps_3a
 
-def eps_grav(P, T, X, Y, Z, P_old, T_old, time_step):
+def eps_grav(P, T, X, Y, Z, old_rho, P_old, T_old, time_step):
     
-    cp = cp_calc(P, T, X, Y, Z)
-    nabla_ad = nabla_ad_calc(P, T, X, Y, Z)
+    cp = cp_calc(P, T, X, Y, Z, old_rho)
+    nabla_ad = nabla_ad_calc(P, T, X, Y, Z, old_rho)
     
     eps_g = - (cp*T) ((1/)*((T-T_old)/(time_step)) - (nabla_ad/P)((P-P_old)/(time_step)))
     
     return eps_g
     
-def eps_nuc(P, T, X, Y, Z):
+def eps_nuc(P, T, X, Y, Z, old_rho):
     
-    eps_p = eps_ppc(P, T, X, Y, Z)
-    eps_c = eps_cno(P, T, X, Y, Z)
-    eps_3a = eps_3alph(P, T, X, Y, Z)
+    eps_p = eps_ppc(P, T, X, Y, Z, old_rho)
+    eps_c = eps_cno(P, T, X, Y, Z, old_rho)
+    eps_3a = eps_3alph(P, T, X, Y, Z, old_rho)
     
     eps_n = sum(eps_p, eps_c, eps_3a)
     
