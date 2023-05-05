@@ -1,9 +1,7 @@
 import pandas as pd
 import numpy as np
-from math import exp, log10, log
 from scipy.interpolate import RectBivariateSpline
 from mpmath import polylog
-import math
 from scipy import interpolate
 
 # constants
@@ -75,8 +73,7 @@ def rho_calc(P,T, X, Y, Z, rho):
     
     # perturb rho iteratively until the pressure difference is approximately 0 
     diff = 1000
-    while not math.isclose(diff, 0, abs_tol = 0.0):
-        print(math.isclose(diff, 0, abs_tol = 0.0))
+    while not np.isclose(diff, 0, atol = 0.0):
         P_rho = float(pressure(T,X,rho, Y, Z).real)
 
         diff = P_hen - P_rho
