@@ -27,7 +27,7 @@ def calc_zeta(Zi, xi, Ai):
     
         zeta_i.append(zet)
         
-    zeta = sum(zeta)
+    zeta = sum(zeta_i)
     
     return zeta
 
