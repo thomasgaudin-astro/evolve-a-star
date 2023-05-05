@@ -21,7 +21,7 @@ def delta_calc(P, T, X, Y, Z, old_rho):
     
     rho_2 = rho_calc(P, T2, X, Y, Z, old_rho)
     
-    delta = - ((rho2 - rho)/(T2-T)) *(T2/rho2)
+    delta = - ((rho2 - rho)/(T2-T)) *(T2/rho_2)
     
     return delta
 
@@ -33,7 +33,7 @@ def alpha_calc(P, T, X, Y, Z, old_rho):
     
     rho_2 = rho_calc(P2, T, X, Y, Z, old_rho)
     
-    alpha = ((rho2 - rho)/(P2-P)) *(P2/rho2)
+    alpha = ((rho2 - rho)/(P2-P)) *(P2/rho_2)
     
     return alpha
 
