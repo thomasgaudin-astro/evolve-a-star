@@ -1,6 +1,5 @@
 import pandas as pd
 import numpy as np
-from math import exp, log10
 from scipy.interpolate import RectBivariateSpline
 
 #constants
