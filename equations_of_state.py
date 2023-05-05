@@ -27,7 +27,7 @@ def number_density(X,rho):
     NA = 6.02e23 #avogadro's number = 6.02e23 mol^-1,  beacause 1mol = 6.02e23 particles
     mu_e = 2/(1+X)
     n = rho*NA/mu_e
-    print('n =',n, ', rho =', rho)
+#     print('n =',n, ', rho =', rho)
     return n
 
 """ψ to be used for the general equation of state"""
