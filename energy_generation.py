@@ -56,7 +56,7 @@ def calc_Be_abund(P, T, X, Y, Z, old_rho, A_alph, A_Be, chi_alph=-91.78e-3):
     
     f_alph_alph = calc_f(P, T, X, Y, Z, old_rho, 2, 2, zeta_no_Be)
     
-    x = (2*pi*(m_He/2)*kb*T)/(h**2)
+    x = (2*np.pi*(m_He/2)*kb*T)/(h**2)
     
     x_Be = ((A_alph**2)/A_Be) * (1/((Y**2)*rho*NA)) * (1/f_alpha_alph) * (x**(-3/2)) * np.exp(chi_alph/(kb_ev*T))
     
