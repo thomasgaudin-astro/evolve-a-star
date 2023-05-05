@@ -332,7 +332,7 @@ def eps_grav(P, T, X, Y, Z, old_rho, P_old, T_old, time_step):
     cp = cp_calc(P, T, X, Y, Z, old_rho)
     nabla_ad = nabla_ad_calc(P, T, X, Y, Z, old_rho)
     
-    eps_g = - (cp*T) ((1/)*((T-T_old)/(time_step)) - (nabla_ad/P)((P-P_old)/(time_step)))
+    eps_g = - (cp*T) ((1/T)*((T-T_old)/(time_step)) - (nabla_ad/P)((P-P_old)/(time_step)))
     
     return eps_g
     
