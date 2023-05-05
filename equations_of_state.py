@@ -4,6 +4,7 @@ from math import exp, log10, log
 from scipy.interpolate import RectBivariateSpline
 from mpmath import polylog
 import math
+from scipy import interpolate
 
 # constants
 h = 6.626176e-27 #erg/s #planck's const
@@ -16,63 +17,73 @@ amu_to_g = 1.66054e-24 #1 amu in g
 mp_in_g = mp*amu_to_g #convert mp from amu to g ****************************
 ma = mp_in_g
 
-#calculate new abundances
-X2 = calc_new_abund(Ai, X, r_x1, r_x2, t1, t2, rho)
-Y2 = calc_new_abund(Ai, Y, r_x1, r_x2, t1, t2, rho)
+# file to interpolate values for integral in equation of state
+fermi_dirac = np.loadtxt("../Data/fermi_dirac.txt",skiprows=1)
+x = fermi_dirac[0][1:]
+y = fermi_dirac[:,0][1:]  #these are Psi values  
+z = fermi_dirac[1:][:,1:]
+fermi_interp = interpolate.interp2d(x, y, z, kind='cubic')
 
 """Number density needed to calculate psi"""
 def number_density(X,rho):
     NA = 6.02e23 #avogadro's number = 6.02e23 mol^-1,  beacause 1mol = 6.02e23 particles
     mu_e = 2/(1+X)
     n = rho*NA/mu_e
+    print('n =',n, ', rho =', rho)
     return n
 
 """ψ to be used for the general equation of state"""
 def psi(T,X,rho):
     ne = number_density(X,rho)
-    ps = np.log( ne*h**3 / (2*(2*np.pi*me*kB*T)**3/2))
+#     print('ne =',ne)
+    ps = np.log( ne*h**3 / ( 2* (2*np.pi*me*kB*T)**(3/2) ) )
     return ps
 
 # use rho to make guess for X, Y and Z (carbon)
-File = np.loadtxt("../Data/structure_00000.txt", dtype=float) #load the structure file
-carbon_mf = np.mean(File[:,32])
+#File = np.loadtxt("../Data/structure_00000.txt", dtype=float) #load the structure file
+#carbon_mf = np.mean(File[:,32])
 
-# the equation of state...pressure
-"""Need to provide Temp, H and He, abundance. Z is the average carbon mass function from the
-structure file"""
+# the equation of state...Pressure
+#Need to provide Temp, H and He, abundance. Z is the average carbon mass function from the structure file
 # make a guess for rho & calculate pressure
 def pressure(T,X,rho, Y, Z):
     Psi = psi(T,X,rho)
     mu_I, mu_e = (X/1 + Y/4 + Z/14)**-1 , 2/(1+X) 
     mu = (1/mu_I + 1/mu_e)**-1 #"""mean molecular weight """ 
-    integral = -3*kB*T*np.sqrt(np.pi/2) * polylog(5/2, -np.exp(1)**Psi) / ((1/kB*me*T)**(3/2))
+
+    nu = 3/2
+    integral = ( (2*me*kB*T)**(5/2) )/(2*me) * fermi_interp(nu,Psi)
     pres = (a*T**4)/3 + rho*kB*T/(mu*ma) + 8*np.pi/(3*h**3) * integral
+    
     return pres
 
 
+# rho_calc function
+#------------------------------------------------------------------------------------------------------------------------------------------------
 # function that uses a rho guess to calculate pressure, compares that pressure to henyey pressure by taking difference.
-# it perturbs that pressure, calculates a new rho, and repeats the above process until the difference is ~0.
+# it perturbs that rho, repeats the above process, then finds the delta_rho (rho guess should be changed by).
 def rho_calc(P,T, X, Y, Z, rho):
     mu_I, mu_e = (X/1 + Y/4 + Z/14)**-1 , 2/(1+X) 
     mu = (1/mu_I + 1/mu_e)**-1
     
-    old_pressure = pressure(T,X,rho, Y, Z) #guess rho, then calculate pressure
-    henyey_pressure = P
-    diff = henyey_pressure - old_pressure 
+    Psi = psi(T,X,rho)
+    P_hen = P
     
-    # perturb pressure iteratively until the difference is approximately 0 
-    # Will exit the loop if the check == True
-    while math.isclose(diff, 0, abs_tol = 0.0) == False:
-        P_new = old_pressure + diff/10  # perturb the old pressure and use it to calculate a new rho
-        
-        integral = -3*kB*T*np.sqrt(np.pi/2) * polylog(5/2, -np.exp(1)**ps) / ((1/kB*me*T)**(3/2))
-        rho_new = ( P_new-(a*T**4)/3 - 8*np.pi/(3*h**3) * integral ) * ( mu*ma/(kB*T) )
-        
-        #calculate pressure again using new rho. Redefine old_pressure
-        old_pressure = pressure(T,X,rho_new, Y, Z)  #P_new
-        
-        diff = henyey_pressure - old_pressure  #diff_new
+    # perturb rho iteratively until the pressure difference is approximately 0 
+    diff = 1000
+    while not math.isclose(diff, 0, abs_tol = 0.0):
+        print(math.isclose(diff, 0, abs_tol = 0.0))
+        P_rho = float(pressure(T,X,rho, Y, Z).real)
 
-    rho_save = rho_new
+        diff = P_hen - P_rho
         
-    return rho_saved
+        rho_pert = rho*1.05 # perturb the old rho and use it to calculate a new pressure
+
+        #calculate pressure again using new rho. Redefine P_rho
+        P_rho_pert = float(pressure(T,X,rho_pert, Y, Z).real)
+
+        del_rho = (rho_pert - rho)/(P_rho - P_rho_pert) * (P_rho - P_hen)
+                
+        rho += del_rho
+                    
+    return rho
