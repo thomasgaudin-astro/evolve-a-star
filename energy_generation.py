@@ -104,7 +104,7 @@ def eps_3alph(P, T, X, Y, Z, old_rho):
     xi_2 = [X, Y, Be, Z]
     Ai_2 = [reduced_mass(1), reduced_mass(2), reduced_mass(4), reduced_mass(6)]
     
-    zeta_Be = calc_zeta(Zi_1, xi_1, Ai_1)
+    zeta_Be = calc_zeta(Zi_2, xi_2, Ai_2)
     
     f_alph_Be = calc_f(P, T, X, Y, Z, old_rho 2, 4, zeta_Be)
     
