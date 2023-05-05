@@ -23,7 +23,7 @@ def calc_zeta(Zi, xi, Ai):
     
     for Z, x, A in zip(Zi, xi, Ai):
         
-        zet = ( ((Zi) * (Zi + 1)) / Ai ) * xi
+        zet = ( ((Z) * (Z + 1)) / A ) * x
     
         zeta_i.append(zet)
         
