@@ -55,6 +55,10 @@ def pressure(T,X,rho, Y, Z):
     integral = ( (2*me*kB*T)**(5/2) )/(2*me) * fermi_interp(nu,Psi)
     pres = (a*T**4)/3 + rho*kB*T/(mu*ma) + 8*np.pi/(3*h**3) * integral
     
+    if Psi < -2:
+        # ignore the degeneracy part if Psi is very negative
+        pres = (a*T**4)/3 + rho*kB*T/(mu*ma) 
+    
     return pres
 
 
