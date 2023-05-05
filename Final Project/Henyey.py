@@ -592,5 +592,6 @@ if __name__ == "__main__":
         description = 'Henyey method for evolution of a star'
         )
     args = parser.parse_args()
-
-    henyey(0)
+    
+    for num in range(0, 1000):
+        henyey(num)
