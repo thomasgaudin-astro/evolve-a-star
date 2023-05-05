@@ -58,7 +58,7 @@ def calc_Be_abund(P, T, X, Y, Z, old_rho, A_alph, A_Be, chi_alph=-91.78e-3):
     
     x = (2*pi*(m_He/2)*kb*T)/(h**2)
     
-    x_Be = ((A_alph**2)/A_Be) * (1/((Y**2)*rho*NA)) * (1/f_alpha_alph) * (x**(-3/2)) * exp(chi_alph/(kb_ev*T))
+    x_Be = ((A_alph**2)/A_Be) * (1/((Y**2)*rho*NA)) * (1/f_alpha_alph) * (x**(-3/2)) * np.exp(chi_alph/(kb_ev*T))
     
     return x_Be
 
@@ -68,7 +68,7 @@ def eps_ppc(P, T, X, Y, Z, old_rho):
     
     rho = rho_calc(P, T, X, Y, Z, old_rho)
     
-    eps_p = ((2.4e4 * rho * (X**2)) / (T9**(2/3))) * exp(-3.88 / (T9**(1/3)))
+    eps_p = ((2.4e4 * rho * (X**2)) / (T9**(2/3))) * np.exp(-3.88 / (T9**(1/3)))
              
     return eps_p
   
@@ -78,7 +78,7 @@ def eps_cno(P, T, X, Y, Z, old_rho):
     
     rho = rho_calc(P, T, X, Y, Z, old_rho)
     
-    eps_c = ((4.4e25 * rho * X * Z) / (T9**(2/3))) *exp(-15.228 / (T9**(1/3)))
+    eps_c = ((4.4e25 * rho * X * Z) / (T9**(2/3))) * np.exp(-15.228 / (T9**(1/3)))
     
     return eps_c
 
