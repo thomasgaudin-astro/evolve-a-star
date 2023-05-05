@@ -319,7 +319,7 @@ def eps_3alph(P, T, X, Y, Z, old_rho):
     
     zeta_Be = calc_zeta(Zi_2, xi_2, Ai_2)
     
-    f_alph_Be = calc_f(P, T, X, Y, Z, old_rho 2, 4, zeta_Be)
+    f_alph_Be = calc_f(P, T, X, Y, Z, old_rho, 2, 4, zeta_Be)
     
     rho_y_T = ( ( (rho**2) * (Y**3) ) / (T9**3) )
     
