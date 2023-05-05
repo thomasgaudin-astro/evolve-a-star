@@ -236,7 +236,7 @@ def henyey():
     pre_eps_CNO_array = structure_df['epsilon_CNO'].to_numpy()
     pre_eps_3alpha_array = structure_df['epsilon_3alpha'].to_numpy()
 
-    X_array, Y_array, Z_array = calc_new_abund(pre_X_array, pre_Y_array, pre_Z_array, pre_rho_array, pre_eps_pp_array, pre_eps_CNO_array, pre_eps_CNO_array, DEL_T)
+    X_array, Y_array, Z_array = pre_X_array, pre_Y_array, pre_Z_array #calc_new_abund(pre_X_array, pre_Y_array, pre_Z_array, pre_rho_array, pre_eps_pp_array, pre_eps_CNO_array, pre_eps_CNO_array, DEL_T)
 
     henyey_matrix = np.zeros((4*len(pre_mass_array)-2, 4*len(pre_mass_array)-2))
     henyey_vector = np.zeros(4*len(pre_mass_array)-2)
@@ -305,6 +305,98 @@ def henyey():
                 henyey_matrix[4*j+1:4*j+2,2+4*(j-1):10+4*(j-1)] = np.array([j,j,j,j,j,j,j,j]) #partial_Aj2(radj, prej, masj, radj1, prej1, masj1, delradj, delprej, delradj1, delprej1)
                 henyey_matrix[4*j+2:4*j+3,2+4*(j-1):10+4*(j-1)] = np.array([j,j,j,j,j,j,j,j]) #partial_Aj3(prej, lumj, temj, masj, prej1, lumj1, temj1, masj1, xj, yj, zj, xj1, yj1, zj1, rhojpre, rhoj1pre, prejpre, temjpre, prej1pre, temj1pre, delprej, dellumj, deltemj, delprej1, dellumj1, deltemj1)
                 henyey_matrix[4*j+3:4*j+4,2+4*(j-1):10+4*(j-1)] = np.array([j,j,j,j,j,j,j,j]) #partial_Aj4(radj, prej, lumj, temj, masj, radj1, prej1, lumj1, temj1, masj1, delradj, delprej, dellumj, deltemj, delradj1, delprej1, dellumj1, deltemj1, xj, yj, zj, xj1, yj1, zj1, rhojpre, rhoj1pre)
+
+    radius_array = pre_radius_array
+    pressure_array = pre_pressure_array
+    luminosity_array = pre_luminosity_array
+    temperature_array = pre_temperature_array
+    while not np.isclose(np.sum(np.abs(henyey_vector)), 0):
+        correction_vector = np.dot(np.linalg.inv(henyey_matrix), henyey_vector)*0.5
+        correction_vector = np.insert(correction_vector, 0, 0)
+        correction_vector = np.insert(correction_vector, 2, 0)
+
+        radius_array = radius_array + correction_vector[::4]
+        pressure_array = pressure_array + correction_vector[1::4]
+        luminosity_array = luminosity_array + correction_vector[2::4]
+        temperature_array = temperature_array + correction_vector[3::4]
+
+        henyey_matrix = np.zeros((4*len(pre_mass_array)-2, 4*len(pre_mass_array)-2))
+        henyey_vector = np.zeros(4*len(pre_mass_array)-2)
+
+        for j, _ in enumerate(pre_mass_array):
+            radj = radius_array[j]
+            prej = pressure_array[j]
+            lumj = luminosity_array[j]
+            temj = temperature_array[j]
+            masj = pre_mass_array[j]
+
+            delradj = 0.05*radj
+            delprej = 0.05*prej
+            dellumj = 0.05*lumj
+            deltemj = 0.05*temj
+
+            xj = X_array[j]
+            yj = Y_array[j]
+            zj = Z_array[j]
+
+            rhojpre = pre_rho_array[j]
+            prejpre = pre_pressure_array[j]
+            temjpre = pre_temperature_array[j]
+            if j == (len(pre_mass_array)-1):
+                henyey_vector[-2] = j #prej - BP(radj, prej, temj, xj, yj, zj, rhojpre)
+                henyey_vector[-1] = j #temj - BT(radj, lumj)
+
+                henyey_matrix[-2:-1,-4:] = np.array([j,j,j,j]) #partial_BP(radj, prej, temj, delradj, delprej, deltemj, xj, yj, zj, rhojpre)
+                henyey_matrix[-1:,-4:] = np.array([j,j,j,j]) #partial_BT(radj, lumj, delradj, dellumj)
+            else:
+                radj1 = radius_array[j+1]
+                prej1 = pressure_array[j+1]
+                lumj1 = luminosity_array[j+1]
+                temj1 = temperature_array[j+1]
+                masj1 = pre_mass_array[j+1]
+
+                delradj1 = 0.05*radj1
+                delprej1 = 0.05*prej1
+                dellumj1 = 0.05*lumj1
+                deltemj1 = 0.05*temj1
+
+                xj1 = X_array[j+1]
+                yj1 = Y_array[j+1]
+                zj1 = Z_array[j+1]
+
+                rhoj1pre = pre_rho_array[j+1]
+                prej1pre = pre_pressure_array[j+1]
+                temj1pre = pre_temperature_array[j+1]
+                if j ==0:
+                    henyey_vector[4*j] = 1000#-A01(prej, temj, radj1, masj1, xj, yj, zj, rhojpre)
+                    henyey_vector[4*j+1] = 1000#-A02(prej, temj, prej1, masj1, xj, yj, zj, rhojpre)
+                    henyey_vector[4*j+2] = 1000#-A03(prej, temj, lumj1, masj1, xj, yj, zj, rhojpre, prejpre, temjpre)
+                    henyey_vector[4*j+3] = 1000#-A04(prej, temj, temj1, masj1, xj, yj, zj, rhojpre, prejpre, temjpre)
+
+                    henyey_matrix[4*j:4*j+1,:6] = np.array([1000,1000,1000,1000,1000,1000])#partial_A01(prej, temj, radj1, masj1, delprej, deltemj, delradj1, xj, yj, zj, rhojpre)
+                    henyey_matrix[4*j+1:4*j+2,:6] = np.array([1000,1000,1000,1000,1000,1000])#partial_A02(prej, temj, prej1, masj1, delprej, deltemj, delprej1, xj, yj, zj, rhojpre)
+                    henyey_matrix[4*j+2:4*j+3,:6] = np.array([1000,1000,1000,1000,1000,1000])#partial_A03(prej, temj, lumj1, masj1, delprej, deltemj, dellumj1, xj, yj, zj, rhojpre, prejpre, temjpre)
+                    henyey_matrix[4*j+3:4*j+4,:6] = np.array([1000,1000,1000,1000,1000,1000])#partial_A03(prej, temj, lumj1, masj1, delprej, deltemj, dellumj, xj, yj, zj, rhojpre, prejpre, temjpre) 
+                else:
+                    henyey_vector[4*j] = j #-Aj1(radj, prej, temj, masj, radj1, prej1, temj1, masj1, xj, yj, zj, xj1, yj1, zj1, rhojpre, rhoj1pre)
+                    henyey_vector[4*j+1] = j #-Aj2(radj, prej, masj, radj1, prej1, masj1)
+                    henyey_vector[4*j+2] = j #-Aj3(prej, lumj, temj, masj, prej1, lumj1, temj1, masj1, xj, yj, zj, xj1, yj1, zj1, rhojpre, rhoj1pre, prejpre, temjpre, prej1pre, temj1pre)
+                    henyey_vector[4*j+3] = j #-Aj4(radj, prej, lumj, temj, masj, radj1, prej1, lumj1, temj1, masj1, xj, yj, zj, xj1, yj1, zj1, rhojpre, rhoj1pre)
+
+                    henyey_matrix[4*j:4*j+1,2+4*(j-1):10+4*(j-1)] = np.array([j,j,j,j,j,j,j,j]) #partial_Aj1(radj, prej, temj, masj, radj1, prej1, temj1, masj1, delradj, delprej, deltemj, delradj1, delprej1, deltemj1, xj, yj, zj, xj1, yj1, zj1, rhojpre, rhoj1pre)
+                    henyey_matrix[4*j+1:4*j+2,2+4*(j-1):10+4*(j-1)] = np.array([j,j,j,j,j,j,j,j]) #partial_Aj2(radj, prej, masj, radj1, prej1, masj1, delradj, delprej, delradj1, delprej1)
+                    henyey_matrix[4*j+2:4*j+3,2+4*(j-1):10+4*(j-1)] = np.array([j,j,j,j,j,j,j,j]) #partial_Aj3(prej, lumj, temj, masj, prej1, lumj1, temj1, masj1, xj, yj, zj, xj1, yj1, zj1, rhojpre, rhoj1pre, prejpre, temjpre, prej1pre, temj1pre, delprej, dellumj, deltemj, delprej1, dellumj1, deltemj1)
+                    henyey_matrix[4*j+3:4*j+4,2+4*(j-1):10+4*(j-1)] = np.array([j,j,j,j,j,j,j,j]) #partial_Aj4(radj, prej, lumj, temj, masj, radj1, prej1, lumj1, temj1, masj1, delradj, delprej, dellumj, deltemj, delradj1, delprej1, dellumj1, deltemj1, xj, yj, zj, xj1, yj1, zj1, rhojpre, rhoj1pre)
+
+    correction_vector = np.dot(np.linalg.inv(henyey_matrix), henyey_vector)*0.5
+    correction_vector = np.insert(correction_vector, 0, 0)
+    correction_vector = np.insert(correction_vector, 2, 0)
+
+    radius_array = radius_array + correction_vector[::4]
+    pressure_array = pressure_array + correction_vector[1::4]
+    luminosity_array = luminosity_array + correction_vector[2::4]
+    temperature_array = temperature_array + correction_vector[3::4]
+
     return()
 
 # Main for argparse
