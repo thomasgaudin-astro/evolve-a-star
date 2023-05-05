@@ -105,7 +105,7 @@ def delta_calc(P, T, X, Y, Z, old_rho):
     
     rho_2 = rho_calc(P, T2, X, Y, Z, old_rho)
     
-    delta = - ((rho2 - rho)/(T2-T)) *(T2/rho_2)
+    delta = - ((rho_2 - rho)/(T2-T)) *(T2/rho_2)
     
     return delta
 
@@ -117,7 +117,7 @@ def alpha_calc(P, T, X, Y, Z, old_rho):
     
     rho_2 = rho_calc(P2, T, X, Y, Z, old_rho)
     
-    alpha = ((rho2 - rho)/(P2-P)) *(P2/rho_2)
+    alpha = ((rho_2 - rho)/(P2-P)) *(P2/rho_2)
     
     return alpha
 
@@ -146,7 +146,7 @@ def cp_calc(P, T, X, Y, Z, old_rho):
     
     delta = delta_calc(P, T, X, Y, Z, old_rho)
     rho = rho_calc(P, T, X, Y, Z, old_rho)
-    Nabla_ad = nabla_ad_calc(P, T, X, Y, Z, old_rho)
+    nabla_ad = nabla_ad_calc(P, T, X, Y, Z, old_rho)
     
     cp = (P * delta) / (T * rho * nabla_ad)
     
@@ -170,7 +170,7 @@ def calc_logR(T, rho):
     
     R = rho / (T6**3) 
     
-    return log10(R)
+    return np.log10(R)
 
 def load_opacities(tab):
     
@@ -196,7 +196,7 @@ def kappa_calc(P, T, X, Y, Z, old_rho, opacity_tab):
     
     kap_func = RectBivariateSpline(log_T, log_R, opacities)
     
-    logT = log10(T)
+    logT = np.log10(T)
     
     logR = calc_logR(T, rho)
     
@@ -208,14 +208,14 @@ def nabla_rad_calc(L, P, T, M, X, Y, Z, old_rho, opacity_tab):
     
     kappa = kappa_calc(P, T, X, Y, Z, old_rho, opacity_tab)
     
-    Nabla_rad = (3 * kappa * L * P) / (16 * pi * a * c * G * M * (T**4))
+    Nabla_rad = (3 * kappa * L * P) / (16 * np.pi * a * c * G * M * (T**4))
     
     return Nabla_rad
 
-def Nabla_calc(L, P, T, M, X, Y, Z, opacity_tab):
+def nabla_calc(P, L, T, M, X, Y, Z, old_rho, opacity_tab):
     
-    Nabla_ad = nabla_ad_calc(P, T, X, Y, Z)
-    Nabla_rad = nabla_rad_calc(L, P, T, M, X, Y, Z, opacity_tab)
+    Nabla_ad = nabla_ad_calc(P, T, X, Y, Z, old_rho)
+    Nabla_rad = nabla_rad_calc(L, P, T, M, X, Y, Z, old_rho, opacity_tab)
     
     Nabla = min(Nabla_ad, Nabla_rad)
     
@@ -269,9 +269,9 @@ def calc_Be_abund(P, T, X, Y, Z, old_rho, A_alph, A_Be, chi_alph=-91.78e-3):
     
     f_alph_alph = calc_f(P, T, X, Y, Z, old_rho, 2, 2, zeta_no_Be)
     
-    x = (2*pi*(m_He/2)*kb*T)/(h**2)
+    x = (2*np.pi*(m_He/2)*kB*T)/(h**2)
     
-    x_Be = ((A_alph**2)/A_Be) * (1/((Y**2)*rho*NA)) * (1/f_alpha_alph) * (x**(-3/2)) * np.exp(chi_alph/(kb_ev*T))
+    x_Be = ((A_alph**2)/A_Be) * (1/((Y**2)*rho*NA)) * (1/f_alph_alph) * (x**(-3/2)) * np.exp(chi_alph/(kb_ev*T))
     
     return x_Be
 
@@ -327,7 +327,7 @@ def eps_3alph(P, T, X, Y, Z, old_rho):
     
     return eps_3a
 
-def eps_grav(P, T, X, Y, Z, old_rho, P_old, T_old, time_step):
+def eps_gra_calc(P, T, X, Y, Z, old_rho, P_old, T_old, time_step):
     
     cp = cp_calc(P, T, X, Y, Z, old_rho)
     nabla_ad = nabla_ad_calc(P, T, X, Y, Z, old_rho)
@@ -336,7 +336,7 @@ def eps_grav(P, T, X, Y, Z, old_rho, P_old, T_old, time_step):
     
     return eps_g
     
-def eps_nuc(P, T, X, Y, Z, old_rho):
+def eps_nuc_calc(P, T, X, Y, Z, old_rho):
     
     eps_p = eps_ppc(P, T, X, Y, Z, old_rho)
     eps_c = eps_cno(P, T, X, Y, Z, old_rho)
