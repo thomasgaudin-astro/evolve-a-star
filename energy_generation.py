@@ -110,7 +110,7 @@ def eps_3alph(P, T, X, Y, Z, old_rho):
     
     rho_y_T = ( ( (rho**2) * (Y**3) ) / (T9**3) )
     
-    eps_3a = (5.08e8)*f1*f2*rho_y_T*exp(-4.4027/T9)
+    eps_3a = (5.08e8)*f1*f2*rho_y_T*np.exp(-4.4027/T9)
     
     return eps_3a
 
