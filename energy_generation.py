@@ -1,6 +1,5 @@
 import numpy as np
 import pandas as pd
-from math import exp
 
 ma = 1.66e-24 #g
 NA = 6.022e23 #atoms mol^-1
@@ -40,7 +39,7 @@ def calc_f(P, T, X, Y, Z, old_rho, Z1, Z2, zeta):
     
     zet_rho = (zeta * rho) / (T6**3)
     
-    f = math.exp(0.188 * Z1 * Z2 * (zet_rho**(1/2)))
+    f = np.exp(0.188 * Z1 * Z2 * (zet_rho**(1/2)))
     
     return f
 
