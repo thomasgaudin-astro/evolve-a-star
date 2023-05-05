@@ -497,9 +497,24 @@ def henyey(pre_num = 0):
         luminosity_array = luminosity_array + correction_vector[2::4]
         temperature_array = temperature_array + correction_vector[3::4]
 
-    # INSERT FINAL CALCULATIONS HERE #
+    # Calculating remaining values from parameter arrays
+    rho_array = rho_calc(pressure_array, temperature_array, X_array, Y_array, Z_array, pre_rho_array)
+    eps_pp_array = np.zeros(len(rho_array))
+    eps_CNO_array = np.zeros(len(rho_array))
+    eps_3alpha_array = np.zeros(len(rho_array))
     
-    # CREATE STRUCTURE FILE HERE #
+    # Creating next structure file
+    header_array = np.array(['M_r', 'r', 'L_r', 'P', 'rho', 'T', 'epsilon_pp',
+                             'epsilon_CNO', 'epsilon_3alpha', 'X', 'Y'])
+    new_structure_df = pd.DataFrame(np.vstack((pre_mass_array, radius_array,
+                                               luminosity_array,
+                                               pressure_array, rho_array,
+                                               temperature_array,
+                                               eps_pp_array, eps_CNO_array,
+                                               eps_3alpha_array, X_array,
+                                               Y_array)).T,
+                                    columns=header_array)
+    new_structure_df[::-1].to_csv(f'./structure_{pre_num+1:05}.txt', sep=' ')
 
     return()
 
