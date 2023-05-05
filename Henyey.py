@@ -2,42 +2,21 @@ import numpy as np
 import matplotlib.pyplot as plt
 import argparse
 import pandas as pd
+from structure_functions import rho_calc, eps_nuc_calc, eps_gra_calc, cp_calc, \
+    delta_calc, nabla_calc, kappa_calc, calc_new_abund, eps_ppc, eps_cno, \
+    eps_3alph
+
 
 
 # Constants
-G = 1
-A_RAD = 1
-C = 1
-M_SUN = 1
-M_T = 1
-SIGMA_SB = 1
-DEL_T = 1
+G = 6.704E-8
+A_RAD = 7.5646E-15
+C = 2.99792458E+10
+M_SUN = 1.989E+33
+M_T = 3.0
+SIGMA_SB = 5.67051E-5
+DEL_T = 3.15576E+13
 
-
-# Dummy functions for various parameters
-def rho_calc(pre, tem, x, y, z, rhopre):
-    return()
-
-def eps_nuc_calc(pre, tem, x, y, z, rhopre):
-    return()
-
-def eps_gra_calc(pre, tem, x, y, z, rhopre, prepre, tempre):
-    return()
-
-def cp_calc(pre, tem, x, y, z, rhopre):
-    return()
-
-def delta_calc(pre, tem, x, y, z, rhopre):
-    return()
-
-def nabla_calc(pre, lum, tem, mas, x, y, z, rhopre, filename):
-    return()
-
-def kappa_calc(pre, tem, x, y, z, rhopre, filename):
-    return()
-
-def calc_new_abund(x, y, z, rhopre, eps_p, eps_c, eps_3a, time_step):
-    return()
 
 
 # Function to calculate derivative
@@ -46,116 +25,163 @@ def derivative_calc(param, pre_param):
     return(deriv)
 
 
+
 # Functions to calculate A values
 # Pressure at the surface of the star
 def BP(re, Pe, Te, x, y, z, rhopre):
+
     kappa_s = kappa_calc(Pe, Te, x, y, z, rhopre, './opacity_table.csv')
+
     bP = (2/3) * (G*M_T*M_SUN)/(kappa_s*re**2)
+
     return(bP)
+
 
 # Temperature at the surface of the star
 def BT(re, Le):
+
     bT = (Le / (4*np.pi*SIGMA_SB*re**2))**(1/4)
+
     return(bT)
+
 
 # Radius disparity measure at shell j > 0
 def Aj1(rj, Pj, Tj, Mj, rj1, Pj1, Tj1, Mj1, x, y, z, x1, y1, z1, rhopre,
         rhopre1):
+    
     rhoj = rho_calc(Pj, Tj, x, y, z, x1, y1, z1, rhopre)
     rhoj1 = rho_calc(Pj1, Tj1, x, y, z, x1, y1, z1, rhopre1)
+
     aj1 = (rj1-rj)/(Mj1-Mj) - 1/(8*np.pi)*(1/(rj1**2*rhoj1) + 1/(rj**2*rhoj))
+
     return(aj1)
+
 
 # Pressure disparity measure at shell j > 0
 def Aj2(rj, Pj, Mj, rj1, Pj1, Mj1):
+
     aj2 = (Pj1-Pj)/(Mj1-Mj) + G/(8*np.pi)*((Mj1)/(rj1**4) + (Mj)/(rj**4))
+
     return(aj2)
+
 
 # Luminosity disparity measure at shell j > 0
 def Aj3(Pj, Lj, Tj, Mj, Pj1, Lj1, Tj1, Mj1, x, y, z, x1, y1, z1, rhopre,
         rhopre1, Pprej, Tprej, Pprej1, Tprej1):
+    
     eps_nucj = eps_nuc_calc(Pj, Tj, x, y, z, rhopre)
     eps_nucj1 = eps_nuc_calc(Pj1, Tj1, x1, y1, z1, rhopre1)
+
     cpj = cp_calc(Pj, Tj, x, y, z, rhopre)
     cpj1 = cp_calc(Pj1, Tj1, x1, y1, z1, rhopre1)
+
     del_Tj = derivative_calc(Tj, Tprej)
     del_Tj1 = derivative_calc(Tj1, Tprej1)
+
     deltaj = delta_calc(Pj, Tj, x, y, z, rhopre)
     deltaj1 = delta_calc(Pj1, Tj1, x1, y1, z1, rhopre1)
+
     rhoj = rho_calc(Pj, Tj, x, y, z, rhopre)
     rhoj1 = rho_calc(Pj1, Tj1, x1, y1, z1, rhopre1)
+
     del_Pj = derivative_calc(Pj, Pprej)
     del_Pj1 = derivative_calc(Pj1, Pprej1)
+
     aj3 = (Lj1-Lj)/(Mj1-Mj) - 1/2*(eps_nucj1 + eps_nucj) \
         + 1/2*(cpj1*del_Tj1 + cpj*del_Tj) \
         - 1/2*(deltaj1/rhoj1*del_Pj1 + deltaj/rhoj*del_Pj)
+    
     return(aj3)
+
 
 # Temperature disparity measure at shell j > 0
 def Aj4(rj, Pj, Lj, Tj, Mj, rj1, Pj1, Lj1, Tj1, Mj1, x, y, z, x1, y1, z1,
         rhopre, rhopre1):
+    
     nablaj = nabla_calc(Pj, Lj, Tj, Mj, x, y, z, rhopre,
                         './opacity_table.csv')
     nablaj1 = nabla_calc(Pj1, Lj1, Tj1, Mj1, x1, y1, z1, rhopre1,
                          './opacity_table.csv')
+    
     aj4 = (Tj1-Tj)/(Mj1-Mj) + G/(8*np.pi)*((Tj1*Mj1*nablaj1)/(Pj1*rj1**4) \
         + (Tj*Mj*nablaj)/(Pj*rj**4))
+    
     return(aj4)
+
 
 # Radius disparity measure at core
 def A01(pre0, tem0, rad1, mas1, x, y, z, rhopre):
+
     rho0 = rho_calc(pre0, tem0, x, y, z, rhopre)
+
     a01 = rad1 - ((3*mas1)/(4*np.pi*rho0))**(1/3)
+
     return(a01)
+
 
 # Pressure disparity measure at core
 def A02(pre0, tem0, pre1, mas1, x, y, z, rhopre):
+
     rho0 = rho_calc(pre0, tem0, x, y, z, rhopre)
+
     a02 = pre1 - pre0 + (3*G)/(8*np.pi)*((4*np.pi*rho0)/3)**(4/3)*mas1**(2/3)
+
     return(a02)
+
 
 # Luminosity disparity measure at core
 def A03(pre0, tem0, lum1, mas1, x, y, z, rhopre, pre0pre, tem0pre):
     eps_nuc0 = eps_nuc_calc(pre0, tem0, x, y, z, rhopre)
-    eps_gra0 = eps_gra_calc(pre0, tem0, x, y, z, rhopre, pre0pre, tem0pre)
+    eps_gra0 = eps_gra_calc(pre0, tem0, x, y, z, rhopre, pre0pre, tem0pre, DEL_T)
     a04 = lum1 - (eps_nuc0+eps_gra0)*mas1
     return(a04)
+
 
 # Temperature disparity measure at core
 def A04(pre0, tem0, tem1, mas1, x, y, z, rhopre, pre0pre, tem0pre):
     rho0 = rho_calc(pre0, tem0, x, y, z, rhopre)
     kappa0 = kappa_calc(pre0, tem0, x, y, z, rhopre, './opacity_table.csv')
     eps_nuc0 = eps_nuc_calc(pre0, tem0, x, y, z, rhopre)
-    eps_gra0 = eps_gra_calc(pre0, tem0, x, y, z, rhopre, pre0pre, tem0pre)
+    eps_gra0 = eps_gra_calc(pre0, tem0, x, y, z, rhopre, pre0pre, tem0pre, DEL_T)
     a03 = tem1**4 - tem0**4 + (kappa0*(eps_nuc0+eps_gra0))/(2*A_RAD*C) \
         * (3/(4*np.pi))**(2/3)*rho0**(4/3)*mas1**(2/3)
     return(a03)
 
 
+
 # Partial derivative finders
 # Partial derivatives of BP
 def partial_BP(re, Pe, Te, delre, delPe, delTe, x, y, z, rhopre):
+
     bP = BP(re, Pe, Te, x, y, z, rhopre)
+
     part_re = (bP(re+delre, Pe, Te, x, y, z, rhopre) - bP) / delre
     part_Pe = (bP(re, Pe+delPe, Te, x, y, z, rhopre) - bP) / delPe
     part_Le = 0
     part_Te = (bP(re, Pe, Te+delTe, x, y, z, rhopre) - bP) / delTe
+
     return(np.array([part_re, part_Pe, part_Le, part_Te]))
+
 
 # Partial derivatives of BT
 def partial_BT(re, Le, delre, delLe):
+
     bT = BT(re, Le)
+
     part_re = (BT(re+delre, Le) - bT) / delre
     part_Pe = 0
     part_Le = (BT(re, Le+delLe) - bT) / delLe
     part_Te = 0
+
     return(np.array([part_re, part_Pe, part_Le, part_Te]))
+
 
 # Partial derivatives of Aj1
 def partial_Aj1(rj, Pj, Tj, Mj, rj1, Pj1, Tj1, Mj1, delrj, delPj, delTj,
                 delrj1, delPj1, delTj1, x, y, z, x1, y1, z1, rhopre, rhopre1):
     aj1 = Aj1(rj, Pj, Tj, Mj, rj1, Pj1, Tj1, Mj1, x, y, z, x1, y1, z1, rhopre,
               rhopre1)
+    
     part_rj = (Aj1(rj+delrj, Pj, Tj, Mj, rj1, Pj1, Tj1, Mj1, x, y, z, x1, y1,
                    z1, rhopre, rhopre1) - aj1) / delrj
     part_Pj = (Aj1(rj, Pj+delPj, Tj, Mj, rj1, Pj1, Tj1, Mj1, x, y, z, x1, y1,
@@ -163,6 +189,7 @@ def partial_Aj1(rj, Pj, Tj, Mj, rj1, Pj1, Tj1, Mj1, delrj, delPj, delTj,
     part_Lj = 0
     part_Tj = (Aj1(rj, Pj, Tj+delTj, Mj, rj1, Pj1, Tj1, Mj1, x, y, z, x1, y1,
                    z1, rhopre, rhopre1) - aj1) / delTj
+    
     part_rj1 = (Aj1(rj, Pj, Tj, Mj, rj1+delrj1, Pj1, Tj1, Mj1, x, y, z, x1,
                     y1, z1, rhopre, rhopre1) - aj1) / delrj1
     part_Pj1 = (Aj1(rj, Pj, Tj, Mj, rj1, Pj1+delPj1, Tj1, Mj1, x, y, z, x1,
@@ -170,29 +197,38 @@ def partial_Aj1(rj, Pj, Tj, Mj, rj1, Pj1, Tj1, Mj1, delrj, delPj, delTj,
     part_Lj1 = 0
     part_Tj1 = (Aj1(rj, Pj, Tj, Mj, rj1, Pj1, Tj1+delTj1, Mj1, x, y, z, x1,
                     y1, z1, rhopre, rhopre1) - aj1) / delTj1
+    
     return(np.array([part_rj, part_Pj, part_Lj, part_Tj, part_rj1, part_Pj1,
                      part_Lj1, part_Tj1]))
 
+
 # Partial derivatives of Aj2
 def partial_Aj2(rj, Pj, Mj, rj1, Pj1, Mj1, delrj, delPj, delrj1, delPj1):
+
     aj1 = Aj2(rj, Pj, Mj, rj1, Pj1, Mj1)
+
     part_rj = (Aj2(rj+delrj, Pj, Mj, rj1, Pj1, Mj1) - aj1) / delrj
     part_Pj = (Aj2(rj, Pj+delPj, Mj, rj1, Pj1, Mj1) - aj1) / delPj
     part_Lj = 0
     part_Tj = 0
+
     part_rj1 = (Aj2(rj, Pj, Mj, rj1+delrj1, Pj1, Mj1) - aj1) / delrj1
     part_Pj1 = (Aj2(rj, Pj, Mj, rj1, Pj1+delPj1, Mj1) - aj1) / delPj1
     part_Lj1 = 0
     part_Tj1 = 0
+
     return(np.array([part_rj, part_Pj, part_Lj, part_Tj, part_rj1, part_Pj1,
                      part_Lj1, part_Tj1]))
+
 
 # Partial derivatives of Aj3
 def partial_Aj3(Pj, Lj, Tj, Mj, Pj1, Lj1, Tj1, Mj1, x, y, z, x1, y1, z1,
                 rhopre, rhopre1, Pprej, Tprej, Pprej1, Tprej1, delPj, delLj,
                 delTj, delPj1, delLj1, delTj1):
+    
     aj1 = Aj3(Pj, Lj, Tj, Mj, Pj1, Lj1, Tj1, Mj1, x, y, z, x1, y1, z1, rhopre,
               rhopre1, Pprej, Tprej, Pprej1, Tprej1)
+    
     part_rj = 0
     part_Pj = (Aj3(Pj+delPj, Lj, Tj, Mj, Pj1, Lj1, Tj1, Mj1, x, y, z, x1, y1,
                    z1, rhopre, rhopre1, Pprej, Tprej, Pprej1, Tprej1) - aj1) \
@@ -203,6 +239,7 @@ def partial_Aj3(Pj, Lj, Tj, Mj, Pj1, Lj1, Tj1, Mj1, x, y, z, x1, y1, z1,
     part_Tj = (Aj3(Pj, Lj, Tj+delTj, Mj, Pj1, Lj1, Tj1, Mj1, x, y, z, x1, y1,
                    z1, rhopre, rhopre1, Pprej, Tprej, Pprej1, Tprej1) - aj1) \
             / delTj
+    
     part_rj1 = 0
     part_Pj1 = (Aj3(Pj, Lj, Tj, Mj, Pj1+delPj1, Lj1, Tj1, Mj1, x, y, z, x1,
                     y1, z1, rhopre, rhopre1, Pprej, Tprej, Pprej1, Tprej1) \
@@ -213,15 +250,19 @@ def partial_Aj3(Pj, Lj, Tj, Mj, Pj1, Lj1, Tj1, Mj1, x, y, z, x1, y1, z1,
     part_Tj1 = (Aj3(Pj, Lj, Tj, Mj, Pj1, Lj1, Tj1+delTj1, Mj1, x, y, z, x1,
                     y1, z1, rhopre, rhopre1, Pprej, Tprej, Pprej1, Tprej1) \
                 - aj1) / delTj1
+    
     return(np.array([part_rj, part_Pj, part_Lj, part_Tj, part_rj1, part_Pj1,
                      part_Lj1, part_Tj1]))
+
 
 # Partial derivatives of Aj4
 def partial_Aj4(rj, Pj, Lj, Tj, Mj, rj1, Pj1, Lj1, Tj1, Mj1, delrj, delPj,
                 delLj, delTj, delrj1, delPj1, delLj1, delTj1, x, y, z, x1, y1,
                 z1, rhopre, rhopre1):
+    
     aj1 = Aj4(rj, Pj, Lj, Tj, Mj, rj1, Pj1, Lj1, Tj1, Mj1, x, y, z, x1, y1,
               z1, rhopre, rhopre1)
+    
     part_rj = (Aj4(rj+delrj, Pj, Lj, Tj, Mj, rj1, Pj1, Lj1, Tj1, Mj1, x, y, z,
                    x1, y1, z1, rhopre, rhopre1) - aj1) / delrj
     part_Pj = (Aj4(rj, Pj+delPj, Lj, Tj, Mj, rj1, Pj1, Lj1, Tj1, Mj1, x, y, z,
@@ -230,6 +271,7 @@ def partial_Aj4(rj, Pj, Lj, Tj, Mj, rj1, Pj1, Lj1, Tj1, Mj1, delrj, delPj,
                    x1, y1, z1, rhopre, rhopre1) - aj1) / delLj
     part_Tj = (Aj4(rj, Pj, Lj, Tj+delTj, Mj, rj1, Pj1, Lj1, Tj1, Mj1, x, y, z,
                    x1, y1, z1, rhopre, rhopre1) - aj1) / delTj
+    
     part_rj1 = (Aj4(rj, Pj, Lj, Tj, Mj, rj1+delrj1, Pj1, Lj1, Tj1, Mj1, x, y,
                     z, x1, y1, z1, rhopre, rhopre1) - aj1) / delrj1
     part_Pj1 = (Aj4(rj, Pj, Lj, Tj, Mj, rj1, Pj1+delPj1, Lj1, Tj1, Mj1, x, y,
@@ -238,79 +280,101 @@ def partial_Aj4(rj, Pj, Lj, Tj, Mj, rj1, Pj1, Lj1, Tj1, Mj1, delrj, delPj,
                     z, x1, y1, z1, rhopre, rhopre1) - aj1) / delLj1
     part_Tj1 = (Aj4(rj, Pj, Lj, Tj, Mj, rj1, Pj1, Lj1, Tj1+delTj1, Mj1, x, y,
                     z, x1, y1, z1, rhopre, rhopre1) - aj1) / delTj1
+    
     return(np.array([part_rj, part_Pj, part_Lj, part_Tj, part_rj1, part_Pj1,
                      part_Lj1, part_Tj1]))
+
 
 # Partial derivatives of A01
 def partial_A01(pre0, tem0, rad1, mas1, delpre0, deltem0, delrad1, x, y, z,
                 rhopre):
+    
     a01 = A01(pre0, tem0, rad1, mas1, x, y, z, rhopre)
+
     partial_pre0 = (A01(pre0+delpre0, tem0, rad1, mas1, x, y, z, rhopre) \
                     - a01) / delpre0
     partial_tem0 = (A01(pre0, tem0+deltem0, rad1, mas1, x, y, z, rhopre) \
                     - a01) / deltem0
+    
     partial_rad1 = (A01(pre0, tem0, rad1+delrad1, mas1, x, y, z, rhopre) \
                     - a01) / delrad1
     partial_pre1 = 0
     partial_lum1 = 0
     partial_tem1 = 0
+
     return(np.array([partial_pre0, partial_tem0, partial_rad1, partial_pre1,
                      partial_lum1, partial_tem1]))
+
 
 # Partial derivatives of A02
 def partial_A02(pre0, tem0, pre1, mas1, delpre0, deltem0, delpre1, x, y, z,
                 rhopre):
+    
     a02 = A02(pre0, tem0, pre1, mas1, x, y, z, rhopre)
+
     partial_pre0 = (A02(pre0+delpre0, tem0, pre1, mas1, x, y, z, rhopre) \
                     - a02) / delpre0
     partial_tem0 = (A02(pre0, tem0+deltem0, pre1, mas1, x, y, z, rhopre) \
                     - a02) / deltem0
+    
     partial_rad1 = 0
     partial_pre1 = (A02(pre0, tem0, pre1+delpre1, mas1, x, y, z, rhopre) \
                     - a02) / delpre1
     partial_lum1 = 0
     partial_tem1 = 0
+
     return(np.array([partial_pre0, partial_tem0, partial_rad1, partial_pre1,
                      partial_lum1, partial_tem1]))
+
 
 # Partial derivatives of A03
 def partial_A03(pre0, tem0, lum1, mas1, delpre0, deltem0, dellum1, x, y, z,
                 rhopre, pre0pre, tem0pre):
+    
     a03 = A03(pre0, tem0, lum1, mas1, x, y, z, rhopre, pre0pre, tem0pre)
+
     partial_pre0 = (A03(pre0+delpre0, tem0, lum1, mas1, x, y, z, rhopre,
                         pre0pre, tem0pre) - a03) / delpre0
     partial_tem0 = (A03(pre0, tem0+deltem0, lum1, mas1, x, y, z, rhopre,
                         pre0pre, tem0pre) - a03) / deltem0
+    
     partial_rad1 = 0
     partial_pre1 = 0
     partial_lum1 = (A03(pre0, tem0, lum1+dellum1, mas1, x, y, z, rhopre,
                         pre0pre, tem0pre) - a03) / dellum1
     partial_tem1 = 0
+
     return(np.array([partial_pre0, partial_tem0, partial_rad1, partial_pre1,
                      partial_lum1, partial_tem1]))
+
 
 # Partial derivatives of A04
 def partial_A04(pre0, tem0, tem1, mas1, delpre0, deltem0, deltem1, x, y, z,
                 rhopre, pre0pre, tem0pre):
+    
     a04 = A04(pre0, tem0, tem1, mas1, x, y, z, rhopre, pre0pre, tem0pre)
+
     partial_pre0 = (A04(pre0+delpre0, tem0, tem1, mas1, x, y, z, rhopre,
                         pre0pre, tem0pre) - a04) / delpre0
     partial_tem0 = (A04(pre0, tem0+deltem0, tem1, mas1, x, y, z, rhopre,
                         pre0pre, tem0pre) - a04) / deltem0
+    
     partial_rad1 = 0
     partial_pre1 = 0
     partial_lum1 = 0
     partial_tem1 = (A04(pre0, tem0, tem1+deltem1, mas1, x, y, z, rhopre,
                         pre0pre, tem0pre) - a04) / deltem1
+    
     return(np.array([partial_pre0, partial_tem0, partial_rad1, partial_pre1,
                      partial_lum1, partial_tem1]))
+
 
 
 # Main function to gather information together
 def henyey(pre_num = 0):
     # Choosing what structure file to read-in and reading it in
     # (reversing order so core is first)
-    structure_df = pd.read_csv(f'structure_{pre_num:05}.txt',sep='\s+')[::-1]
+    structure_df = pd.read_csv(f'./structure/structure_{pre_num:05}.txt',sep='\s+')[::-1]
 
     # Converting relevant structure columns to arrays
     pre_mass_array = structure_df['M_r'].to_numpy()
@@ -499,9 +563,9 @@ def henyey(pre_num = 0):
 
     # Calculating remaining values from parameter arrays
     rho_array = rho_calc(pressure_array, temperature_array, X_array, Y_array, Z_array, pre_rho_array)
-    eps_pp_array = np.zeros(len(rho_array))
-    eps_CNO_array = np.zeros(len(rho_array))
-    eps_3alpha_array = np.zeros(len(rho_array))
+    eps_pp_array = eps_ppc(pressure_array, temperature_array, X_array, Y_array, Z_array, rho_array)
+    eps_CNO_array = eps_cno(pressure_array, temperature_array, X_array, Y_array, Z_array, rho_array)
+    eps_3alpha_array = eps_3alph(pressure_array, temperature_array, X_array, Y_array, Z_array, rho_array)
     
     # Creating next structure file
     header_array = np.array(['M_r', 'r', 'L_r', 'P', 'rho', 'T', 'epsilon_pp',
@@ -514,9 +578,11 @@ def henyey(pre_num = 0):
                                                eps_3alpha_array, X_array,
                                                Y_array)).T,
                                     columns=header_array)
-    new_structure_df[::-1].to_csv(f'./structure_{pre_num+1:05}.txt', sep=' ')
+    new_structure_df[::-1].to_csv(f'./structure/structure_{pre_num+1:05}.txt', sep=' ')
 
     return()
+
+
 
 # Main for argparse
 if __name__ == "__main__":
