@@ -404,6 +404,7 @@ def henyey(pre_num = 0):
     luminosity_array = pre_luminosity_array*1.01
     temperature_array = pre_temperature_array*1.01
 
+    henyey_vector = np.zeros(4*len(pre_mass_array)-2) + 1
     # Running Henyey calculation
     while not np.isclose(np.sum(np.abs(henyey_vector)), 0):
         # Initializing Henyey matrix H and vector A to appropriate

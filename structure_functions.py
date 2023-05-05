@@ -23,7 +23,7 @@ m_He = 4.0026 * ma #g
 c = 3.0e10 #cm s^-1
 
 # file to interpolate values for integral in equation of state
-fermi_dirac = np.loadtxt("../Data/fermi_dirac.txt",skiprows=1)
+fermi_dirac = np.loadtxt("./fermi_dirac.txt",skiprows=1)
 x = fermi_dirac[0][1:]
 y = fermi_dirac[:,0][1:]  #these are Psi values  
 z = fermi_dirac[1:][:,1:]
@@ -332,7 +332,7 @@ def eps_gra_calc(P, T, X, Y, Z, old_rho, P_old, T_old, time_step):
     cp = cp_calc(P, T, X, Y, Z, old_rho)
     nabla_ad = nabla_ad_calc(P, T, X, Y, Z, old_rho)
     
-    eps_g = - (cp*T) ((1/T)*((T-T_old)/(time_step)) - (nabla_ad/P)((P-P_old)/(time_step)))
+    eps_g = - (cp*T)*((1/T)*((T-T_old)/(time_step)) - (nabla_ad/P)*((P-P_old)/(time_step)))
     
     return eps_g
     
@@ -342,7 +342,7 @@ def eps_nuc_calc(P, T, X, Y, Z, old_rho):
     eps_c = eps_cno(P, T, X, Y, Z, old_rho)
     eps_3a = eps_3alph(P, T, X, Y, Z, old_rho)
     
-    eps_n = sum(eps_p, eps_c, eps_3a)
+    eps_n = eps_p + eps_c + eps_3a
     
     return eps_n
 
